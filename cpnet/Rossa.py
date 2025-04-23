@@ -43,8 +43,7 @@ class Rossa(CPAlgorithm):
         """
         A, nodelabel = utils.to_adjacency_matrix(G)
 
-        x = self._detect(A)
-        cids = np.zeros(A.shape[0]).astype(int)
+        cids, x = self._detect(A)
         Q = self._score(A, cids, x)[0]
 
         self.nodelabel = nodelabel
@@ -95,7 +94,7 @@ class Rossa(CPAlgorithm):
 
             alpha[idx] = bk / max(1, ak)
 
-        return x
+        return np.zeros(N).astype(int), alpha
 
     def _argmin2(self, b):
         return np.random.choice(np.flatnonzero(b == b.min()))
