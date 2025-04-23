@@ -23,6 +23,22 @@ def _score_(A_indptr, A_indices, A_data, num_nodes, x):
 
     return Q
 
+@numba.jit(nopython=True, cache=True)
+def numba_detect(deg):
+    M = np.sum(deg)
+    order = np.argsort(-deg)
+    Z = M
+    Zbest = np.inf
+    kbest = 0
+    for k in range(len(deg)):
+        Z = Z + k - 1 - deg[order[k]]
+        if Z < Zbest:
+            kbest = k
+            Zbest = Z
+    _x = np.zeros(len(deg))
+    _x[order[: kbest + 1]] = 1
+
+    return _x
 
 class Lip(CPAlgorithm):
     """Lip's algorithm.
@@ -70,20 +86,7 @@ class Lip(CPAlgorithm):
         self.qs_ = Q
 
     def _detect(self, deg):
-        M = np.sum(deg)
-        order = np.argsort(-deg)
-        Z = M
-        Zbest = np.inf
-        kbest = 0
-        for k in range(len(deg)):
-            Z = Z + k - 1 - deg[order[k]]
-            if Z < Zbest:
-                kbest = k
-                Zbest = Z
-        _x = np.zeros(len(deg))
-        _x[order[: kbest + 1]] = 1
-
-        return _x
+        return numba_detect(deg)
 
     def _score(self, A, c, x):
         """Calculate the strength of core-periphery pairs.
